@@ -1,13 +1,25 @@
-# skridt no 1 : importere FastAPI klassen fra fastapi biblioteket
+# skridt 1: importere nødvendige biblioteker
+
+# importer bibloteket 
+# FastApi er et web framework for å bygge APIer i Python.
+# Det er kjent for sin hastighet og enkelhet, 
+# og det gjør det enkelt å lage robuste og skalerbare APIer.
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 
-# skridt no 2 : oprette en instans af FastAPI klassen
+# pydentic er et bibliotek for datavalidering og 
+# innstilling av data i Python.
+from pydantic import BaseModel
+from typing import Optional
+
+
+# skridt 2: opprette en FastAPI-app instance 
 app = FastAPI()
 
-# Fake Dummy Data 
+# skridt 3: lage en datamodell for bøker
 
+# Fake Dummy Data 
+# array of dictionary
 books = [
     {"id": 1, "title": "Python Basics", "author": "Real P.", "pages": 635},
     {"id": 2, "title": "Breaking the Rules", "author": "Stephen G.", "pages": 99},
@@ -15,24 +27,37 @@ books = [
     {"id": 4, "title": "Breaking the rule1", "author": "Stephen L.", "pages": 200},
 ]
 
-# class based approach
-class Book(BaseModel):
+# Book class is a Pydantic model that defines the structure of a book object.
+class Book(BaseModel):   
     title: str
-    author : str
-    pages : int
-
-# skridt no 3 : definere en rute ved hjælp af app.get() dekoratoren
+    author: str
+    pages: int
+    
+    
+# skridt 4: lage en GET-endepunkt for å hente alle bøker
+# get all books
 @app.get("/books")
 def get_books():
-    return books    
+    return books
 
-@app.get("/books/{id}") 
-def get_book(id: int):
+# get book by id
+@app.get("/books/{book_id}")
+def get_book(book_id: int):
     for book in books:
-        if book["id"] == id:
+        if book["id"] == book_id:
             return book
-    return {"message": "Book not found"}
+    return {"error": "Book not found"}
 
+# search books by title or author
+@app.get("/books/search/{query}")
+def search_books(query: str):
+    results = []
+    for book in books:
+        if query.lower() in book["title"].lower() or query.lower() in book["author"].lower():
+            results.append(book)
+    return results
+
+# Post book
 @app.post("/books")
 def create_book(book: Book):
     new_book = {
@@ -44,6 +69,7 @@ def create_book(book: Book):
     books.append(new_book)
     return new_book
 
+# Put book
 @app.put("/books/{id}")
 def update_book(id: int, updated_book: Book):
     for book in books:
@@ -54,6 +80,8 @@ def update_book(id: int, updated_book: Book):
             return book
     return {"message": "Book not found"}
 
+
+
 @app.delete("/books/{id}")
 def delete_book(id: int):
     for book in books:
@@ -62,22 +90,4 @@ def delete_book(id: int):
             return {"message": "Book deleted"}
     return {"message": "Book not found"}
 
-@app.get("/books/search")
-def search_books(query: str):
-    results = []
-    for book in books:
-        if query.lower() in book["title"].lower() or query.lower() in book["author"].lower():
-            results.append(book)
-    return results
 
-@app.get("/books/sort")
-def sort_books(by: str):
-    if by == "title":
-        sorted_books = sorted(books, key=lambda x: x["title"])
-    elif by == "author":
-        sorted_books = sorted(books, key=lambda x: x["author"])
-    elif by == "pages":
-        sorted_books = sorted(books, key=lambda x: x["pages"])
-    else:
-        return {"message": "Invalid sort parameter"}
-    return sorted_books
