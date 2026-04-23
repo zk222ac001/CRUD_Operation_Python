@@ -52,9 +52,15 @@ def get_book(book_id: int):
 @app.get("/books/search/{query}")
 def search_books(query: str):
     results = []
+    q = query.lower()
+
     for book in books:
-        if query.lower() in book["title"].lower() or query.lower() in book["author"].lower():
+        title = book["title"].lower()
+        author = book["author"].lower()
+
+        if title.startswith(q) or author.startswith(q):
             results.append(book)
+
     return results
 
 # Post book
