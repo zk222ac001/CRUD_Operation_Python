@@ -58,7 +58,7 @@ def search_books(query: str):
         title = book["title"].lower()
         author = book["author"].lower()
 
-        if title.startswith(q) or author.startswith(q):
+        if q in title or q in author:
             results.append(book)
 
     return results
